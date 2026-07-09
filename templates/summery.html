@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Research Paper Summarizer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Poppins', sans-serif;
+        }
+
+        body {
+            color: white;
+            min-height: 100vh; /* Changed from height to min-height */
+            flex-direction: column; /* Stack container and footer vertically */
+            align-items: center;
+            justify-content: flex-start; /* Start from top to allow scrolling */
+            overflow-y: auto; /* Ensure scrolling is allowed */
+        }
+
+        /* CONTAINER */
+
+
+        .hero{
+            width: 100%;
+            min-height: 90vh;
+
+            display: flex; /* IMPORTANT */
+            align-items: center;
+            justify-content: center;
+
+            background: linear-gradient(180deg, #ff6b6b, #fff5f5);
+            position: relative;
+            overflow: hidden;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+
+        .logo {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+
+            letter-spacing: 1px;
+            cursor: pointer;
+
+            z-index: 2; /* keep above glass card */
+        }
+
+        .logo:hover{
+            transform: scale(1.15);
+        }
+        .glass-card {
+            width: 90%;
+            max-width: 900px;
+
+            background: rgba(255, 255, 255, 0.08); /* more transparent */
+            
+            backdrop-filter: blur(25px); /* stronger blur */
+            -webkit-backdrop-filter: blur(25px);
+
+            border-radius: 20px;
+            padding: 30px;
+
+            border: 1px solid rgba(255, 255, 255, 0.2);
+
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3);
+
+            transition: 0.3s;
+        }
+
+        /* REFRESH BUTTON */
+        .refresh-btn{
+            position:absolute;
+            top:15px;
+            right:20px;
+            font-size:20px;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        .refresh-btn:hover{
+            transform: rotate(180deg) scale(1.2);
+            color:#00c6ff;
+        }
+
+        h1{
+            text-align:center;
+            margin-bottom:10px;
+        }
+
+        .subtext{
+            text-align:center;
+            font-size:14px;
+            opacity:0.7;
+            margin-bottom:25px;
+            color: #4a0e0e ;
+        }
+
+        textarea{
+            width:100%;
+            height:150px;
+            border-radius:10px;
+            border:none;
+            padding:15px;
+            font-size:14px;
+            outline:none;
+            resize:none;
+            color: #333;
+        }
+
+        .controls{
+            display:flex;
+            justify-content:space-between;
+            margin-top:10px;
+            font-size:12px;
+            opacity:0.7;
+        }
+
+        button{
+            width:100%;
+            margin-top:20px;
+            padding:12px;
+            border:none;
+            border-radius:10px;
+            background: linear-gradient(to right,#0072ff,#00c6ff);
+            color:white;
+            font-size:16px;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        button:hover{
+            transform:scale(1.05);
+        }
+
+        .drop-area{
+            margin-bottom:15px;
+            padding:30px;
+            border:2px dashed rgba(255,255,255,0.3);
+            border-radius:15px;
+            text-align:center;
+            cursor:pointer;
+            transition:0.3s;
+            color: #4a0e0e ;
+        }
+
+        .drop-area:hover{
+            background:rgba(255,255,255,0.05);
+        }
+
+        .drop-area.dragover{
+            border-color:#00c6ff;
+            background:rgba(0,198,255,0.1);
+        }
+
+        .drop-area p{
+            font-size:14px;
+            opacity:0.8;
+        }
+
+        /* RESULT BOX */
+        .result{
+            margin-top:25px;
+            padding:20px;
+            border-radius:10px;
+            text-align:left;
+            font-size:15px;
+            display:none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .success{
+            background: rgba(203, 247, 242, 0.902);
+            border:1px solid lime;
+            color: black;
+        }
+
+        .warning{
+            background: rgba(255,165,0,0.2);
+            border:1px solid orange;
+        }
+
+        /* LOADER */
+        .loader{
+            display:none;
+            margin-top:15px;
+            text-align:center;
+        }
+
+        .loader div{
+            width:10px;
+            height:10px;
+            background:white;
+            border-radius:50%;
+            display:inline-block;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loader div:nth-child(1){animation-delay:-0.32s}
+        .loader div:nth-child(2){animation-delay:-0.16s}
+
+        @keyframes bounce{
+            0%,80%,100%{transform:scale(0)}
+            40%{transform:scale(1)}
+        }
+
+
+
+
+        .c-p{
+            margin-top: 20px;
+            text-align:center;
+            font-size:12px;
+            opacity:0.6;
+            color: #4a0e0e ;
+        }
+
+        /* ACTION BUTTONS CONTAINER */
+        .action-buttons{
+            display:none;
+            justify-content:space-between;
+            align-items:center;
+            margin-top:15px;
+        }
+
+        /* DOWNLOAD BUTTON */
+        .download-btn{
+            background: linear-gradient(to right,#00c6ff,#0072ff);
+            padding:8px 15px;
+            border:none;
+            border-radius:8px;
+            color:white;
+            cursor:pointer;
+            font-size:14px;
+            width: auto;
+            margin-top: 0;
+        }
+
+        /* CHATBOT ICON */
+        .chatbot-icon{
+            width:45px;
+            height:45px;
+            background: linear-gradient(to right,#0072ff,#00c6ff);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            border-radius:50%;
+            font-size:20px;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        .chatbot-icon:hover{
+            transform:scale(1.1);
+        }
+
+        /* CHAT POPUP */
+        .chat-popup{
+            position:fixed;
+            bottom:20px;
+            right:20px;
+            width:320px;
+            height:400px;
+            background:#0f172a;
+            border-radius:15px;
+            display:none;
+            flex-direction:column;
+            box-shadow:0 10px 40px rgba(0,0,0,0.5);
+            overflow:hidden;
+            z-index:1000;
+        }
+
+        /* HEADER */
+        .chat-header{
+            background:#020617;
+            padding:10px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            font-size:14px;
+        }
+
+        .close-btn{
+            cursor:pointer;
+        }
+
+        /* MESSAGES */
+        .chat-messages{
+            flex:1;
+            padding:10px;
+            overflow-y:auto;
+            font-size:13px;
+        }
+
+        /* MESSAGE STYLES */
+        .user-msg{
+            background:#0072ff;
+            padding:8px;
+            border-radius:8px;
+            margin:5px 0;
+            text-align:right;
+            align-self: flex-end;
+            max-width: 80%;
+            margin-left: auto;
+        }
+
+        .bot-msg{
+            background:#1e293b;
+            padding:8px;
+            border-radius:8px;
+            margin:5px 0;
+            text-align: left;
+            max-width: 80%;
+        }
+
+        /* INPUT AREA */
+        .chat-input{
+            display:flex;
+            border-top:1px solid rgba(255,255,255,0.1);
+            background: #1e293b;
+        }
+
+        .chat-input input{
+            flex:1;
+            padding:12px;
+            border:none;
+            outline:none;
+            background: transparent;
+            color: white;
+        }
+
+        .chat-input button{
+            width: 50px;
+            margin: 0;
+            border-radius: 0;
+            background:#00c6ff;
+            cursor:pointer;
+        }
+
+
+
+
+
+        /* FAQ SECTION - Separated as its own island */
+        .faq-container {
+            width: 90%;
+            max-width: 900px;
+            margin: 40px auto 60px auto; /* Adds healthy spacing between container and FAQ */
+            padding: 0; /* Remove padding to let items align with main container */
+            text-align: center;
+        }
+
+        .faq-container h2 {
+            font-size: 28px;
+            margin-bottom: 25px;
+            color: #4a0e0e; /* Matches your subtext color */
+        }
+
+        .faq-item {
+            background: rgba(255, 255, 255, 0.1); /* Transparent glass */
+            backdrop-filter: blur(15px);
+            margin-bottom: 15px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            text-align: left;
+            transition: 0.3s;
+        }
+
+        .faq-question {
+            padding: 20px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #4a0e0e;
+            background: rgba(255, 255, 255, 0.1);
+            transition: 0.3s;
+        }
+
+        .faq-question:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0; /* Hidden by default */
+            overflow: hidden;
+            font-size: 15px;
+            color: #4a0e0e;
+            opacity: 0.8;
+            transition: max-height 0.4s ease, padding 0.3s ease;
+        }
+
+        /* Active State for JavaScript */
+        .faq-item.active .faq-answer {
+            max-height: 150px; /* Adjust based on content */
+            padding: 15px 20px;
+        }
+
+
+        .faq-question span {
+            font-size: 22px;
+            transition: 0.3s;
+        }
+
+
+
+        .footer{
+            width: 100%;
+            background: linear-gradient(180deg,#fefefe,#ff6b6b);
+
+            
+
+            text-align:center;
+
+            padding:20px 10%;
+
+        }
+
+
+        .footer p{
+        margin:6px 0;
+        color:#4a0e0e;
+        }
+
+        .footer-social{
+
+        margin-top:15px;
+
+        }
+
+        .footer-social a{
+
+        margin:0 10px;
+
+        color:#4a0e0e;
+
+        text-decoration:none;
+
+        transition:0.3s;
+
+        }
+
+        .footer-social a i{
+            width:40px;
+            height:40px;
+            background:#0b59f6;
+            color:rgb(249, 249, 249);
+            align-items:center;
+            border-radius:50%;
+            text-decoration:none;
+            font-size:16px;
+        }
+        .footer-social a i {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px; /* Add space between icon and text */
+        }
+
+        .footer-social a:hover{
+            color:white;
+            }
+
+            .copyright{
+
+            margin-top:20px;
+
+            font-size:13px;
+
+            color:#888;
+
+        }
+
+        .copyright, .copyright b {
+            margin-top: 20px;
+            font-size: 13px;
+            color: rgb(52, 52, 232) !important; /* Adding !important ensures it overrides other styles */
+        }
+
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="logo">Sudipta</div>
+        <div class="container glass-card">
+        <div class="refresh-btn" onclick="refreshPage()">🔄</div>
+
+        <h1>📄 AI Research Paper Summarizer</h1>
+        <p class="subtext">Summarize long research papers instantly using AI</p>
+
+        <form id="summarizerForm" enctype="multipart/form-data">
+            <textarea name="text" id="text" placeholder="Paste research paper text here..."></textarea>
+
+            <div class="drop-area" id="dropArea">
+                <p id="dropText">📂 Drag & Drop PDF here or click to upload</p>
+                <input type="file" name="pdf" id="fileInput" accept=".pdf" hidden>
+            </div>
+        
+            <div class="controls">
+                <span id="charCount">0 characters</span>
+            </div>
+
+            <button type="submit" id="submitBtn">Generate Summary</button>
+        </form>
+
+        <div class="loader" id="loader">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <div id="resultBox" class="result"></div>
+
+        <div class="action-buttons" id="actionButtons">
+            <button class="download-btn" onclick="downloadSummary()">⬇ Download</button>
+            <div class="chatbot-icon" onclick="openChat()">💬</div>
+        </div>
+
+        <div class="c-p">
+            ⚡ Powered by AI NLP Model | Built by Sudipta
+        </div>
+    </div>
+
+    <div class="chat-popup" id="chatPopup">
+        <div class="chat-header">
+            <span>💬 Chat with PDF</span>
+            <span class="close-btn" onclick="closeChat()">✖</span>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="bot-msg">👋 Ask anything about your paper!</div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Type your question...">
+            <button onclick="sendChat()">➤</button>
+        </div>
+    </div>
+
+</section>
+
+
+
+<div class="faq-container">
+    <h2>FAQ</h2>
+
+    <div class="faq-item">
+        <div class="faq-question">Is this research paper summarizer free? <span>+</span></div>
+        <div class="faq-answer">Yes, the tool is completely free to use for summarizing documents and PDFs.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">What types of files are supported? <span>+</span></div>
+        <div class="faq-answer">You can upload PDF files or paste plain text to generate summaries.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Does the system store my uploaded PDF? <span>+</span></div>
+        <div class="faq-answer">No, your files are processed in memory and are not stored on the server, ensuring privacy and security.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">How long does summarization take? <span>+</span></div>
+        <div class="faq-answer">Typically a few seconds to a minute depending on document size and system performance.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Can I ask questions about my document? <span>+</span></div>
+        <div class="faq-answer">Yes, after summarization you can interact with the document using the chat feature powered by AI (RAG system).</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Can I download the summary? <span>+</span></div>
+        <div class="faq-answer">Yes, you can download the generated summary as a text or PDF file.</div>
+    </div>
+</div>
+
+
+
+
+
+<footer class="footer" id = "Contact" >
+
+    
+    <p>Email: sudiptajana11111@email.com</p>
+    
+    <p>Mobile: +91 8436685689</p>
+    
+    <p>Location: Kolkata, India</p>
+    
+    <div class="footer-social">
+    
+    <a href="#"><i class="fab fa-github"></i> GitHub</a>
+    <a href="#"><i class="fab fa-linkedin-in"></i> LinkedIn</a>
+    <a href="#"><i class="fab fa-facebook"></i> Facebook</a>
+    
+    </div>
+    
+    <p class="copyright">
+    © 2026 Sudipta Jana | All Rights Reserved
+    </p>
+    
+</footer>
+
+
+
+<script>
+    const textarea = document.getElementById('text');
+    const charCount = document.getElementById('charCount');
+    const loader = document.getElementById('loader');
+    const form = document.getElementById('summarizerForm');
+    const resultBox = document.getElementById('resultBox');
+    const actionButtons = document.getElementById('actionButtons');
+    const dropArea = document.getElementById("dropArea");
+    const fileInput = document.getElementById("fileInput");
+    const dropText = document.getElementById("dropText");
+    const chatMessages = document.getElementById("chatMessages");
+    
+    // ============================
+    // Character Counter
+    // ============================
+    textarea.addEventListener('input', () => {
+        charCount.innerText = textarea.value.length + " characters";
+    });
+    
+    // ============================
+    // Refresh Function
+    // ============================
+    function refreshPage(){
+        form.reset();
+        fileInput.value = "";
+        charCount.innerText = "0 characters";
+    
+        resultBox.style.display = "none";
+        actionButtons.style.display = "none";
+    
+        dropText.innerHTML = "📂 Drag & Drop PDF here or click to upload";
+    
+        // Reset chat
+        chatMessages.innerHTML = '<div class="bot-msg">👋 Ask anything about your paper!</div>';
+    }
+    
+    // ============================
+    // Drag & Drop Logic
+    // ============================
+    dropArea.addEventListener("click", () => fileInput.click());
+    
+    dropArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropArea.classList.add("dragover");
+    });
+    
+    dropArea.addEventListener("dragleave", () => {
+        dropArea.classList.remove("dragover");
+    });
+    
+    dropArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropArea.classList.remove("dragover");
+    
+        const file = e.dataTransfer.files[0];
+    
+        if(file && file.type === "application/pdf"){
+            fileInput.files = e.dataTransfer.files;
+            dropText.innerHTML = `✅ ${file.name} uploaded`;
+        } else {
+            dropText.innerHTML = `<span style="color:#ff4d4d;">❌ Only PDF allowed</span>`;
+        }
+    });
+    
+    fileInput.addEventListener("change", () => {
+        if(fileInput.files[0]){
+            dropText.innerHTML = `✅ ${fileInput.files[0].name} uploaded`;
+        }
+    });
+    
+    // ============================
+    // Form Submission (Backend Ready)
+    // ============================
+    // Locate the form submit listener inside your script section in summery.html and match this fix
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if(!textarea.value && !fileInput.files[0]) {
+            resultBox.style.display = "block";
+            resultBox.className = "result warning";
+            resultBox.innerText = "⚠️ Please enter text or upload a PDF to summarize";
+            return;
+        }
+
+        loader.style.display = 'block';
+        resultBox.style.display = 'none';
+        actionButtons.style.display = 'none';
+
+        const formData = new FormData();
+        formData.append("text", textarea.value);
+
+        if(fileInput.files[0]){
+            formData.append("pdf", fileInput.files[0]);
+        }
+
+        try {
+            const response = await fetch("/summarize", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            
+            resultBox.innerText = data.summary;
+            
+            // Dynamic status layout based on output returned from backend
+            if (data.summary.includes("⚠️") || data.summary.includes("Error")) {
+                resultBox.className = "result warning";
+                actionButtons.style.display = 'none';
+            } else {
+                resultBox.className = "result success";
+                actionButtons.style.display = 'flex';
+            }
+
+        } catch(error) {
+            resultBox.className = "result warning";
+            resultBox.innerText = "⚠️ Error communicating with processing backend server.";
+        }
+
+        loader.style.display = 'none';
+        resultBox.style.display = 'block';
+    });
+        
+        // ============================
+        // Download Summary
+        // ============================
+        function downloadSummary(){
+            const summaryText = resultBox.innerText;
+        
+            const blob = new Blob([summaryText], { type: "text/plain" });
+            const link = document.createElement("a");
+        
+            link.href = URL.createObjectURL(blob);
+            link.download = "summary.txt";
+            link.click();
+        }
+        
+        // ============================
+        // Chat Popup Control
+        // ============================
+        function openChat(){
+            document.getElementById("chatPopup").style.display = "flex";
+        }
+        
+        function closeChat(){
+            document.getElementById("chatPopup").style.display = "none";
+        }
+    
+    // ============================
+    // Chat Logic (Backend Ready)
+    // ============================
+    async function sendChat() {
+        const input = document.getElementById("chatInput");
+        const text = input.value.trim();
+    
+        if(text === "") return;
+    
+        // User Message
+        const userDiv = document.createElement("div");
+        userDiv.className = "user-msg";
+        userDiv.innerText = text;
+        chatMessages.appendChild(userDiv);
+    
+        input.value = "";
+    
+        // Bot Placeholder
+        const botDiv = document.createElement("div");
+        botDiv.className = "bot-msg";
+        botDiv.innerText = "Thinking...";
+        chatMessages.appendChild(botDiv);
+    
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+        try{
+            const response = await fetch("/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ message: text })
+            });
+    
+            const data = await response.json();
+            botDiv.innerText = data.reply;
+    
+        }catch(error){
+            botDiv.innerText = "⚠️ Backend not connected";
+        }
+    
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // ============================
+    // Enter Key Support for Chat
+    // ============================
+    document.getElementById("chatInput").addEventListener("keypress", function(e){
+        if(e.key === "Enter"){
+            sendChat();
+        }
+    });
+
+
+
+
+    // ============================
+    // FAQ SECTION
+    // ============================
+
+    document.querySelectorAll('.faq-question').forEach(button => {
+    button.addEventListener('click', () => {
+        const faqItem = button.parentElement;
+        faqItem.classList.toggle('active');
+        
+        // Change the plus (+) to a minus (-) or x
+        const span = button.querySelector('span');
+        if(faqItem.classList.contains('active')) {
+            span.innerText = "−";
+        } else {
+            span.innerText = "+";
+        }
+    });
+});
+    </script>
+
+</body>
+</html>
+
+
+

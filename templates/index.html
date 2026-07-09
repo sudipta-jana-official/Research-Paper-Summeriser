@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Research Paper Summarizer</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+:root {
+    --primary: #ff6b6b;       /* Main Coral */
+    --secondary: #ee5253;     /* Deep Coral for hover/accents */
+    --accent: #ff9f43;
+    --dark: #0f172a;
+    --light: #f8fafc;
+    --gray: #64748b;
+
+}
+
+/* Reset */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins', sans-serif;
+}
+
+body{
+    background: white;
+    color: var(--dark);
+}
+
+/* NAVBAR */
+nav{
+    position: fixed;
+    width:100%;
+    top:0;
+    left:0;
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.6);
+    border-bottom:1px solid rgba(0,0,0,0.05);
+    z-index:1000;
+}
+
+.nav-container{
+    max-width:1200px;
+    margin:auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 20px;
+}
+
+.logo{
+    font-size:1.6rem;
+    font-weight:800;
+    color:var(--primary);
+    cursor:pointer;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+
+.nav-links{
+    display:flex;
+    gap:25px;
+}
+
+.nav-links a{
+    text-decoration:none;
+    color:var(--dark);
+    transition:.3s;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+}
+
+.nav-links a:hover{
+    color:var(--primary);
+}
+
+.nav-links a{
+    position: relative;
+    text-decoration: none;
+    color: var(--dark);
+    font-weight: 500;
+}
+
+/* underline */
+.nav-links a::after{
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -5px;
+    width: 0%;
+    height: 2px;
+    background: var(--primary);
+    transition: width 0.3s ease;
+}
+
+/* hover effect */
+.nav-links a:hover::after{
+    width: 100%;
+}
+
+
+.logo{
+    font-size:1.6rem;
+    font-weight:800;
+    color:#ff5643;
+    cursor:pointer;
+    transition: all 0.3s ease;
+}
+
+.logo:hover{
+    transform: scale(1.15);
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* HERO */
+.hero{
+    width:100%;
+    margin-top: 20px;
+    min-height:70vh;
+    display:flex;
+    align-items:center;
+    padding-top:50px;
+    background: linear-gradient(180deg, #ff6b6b, #ffffff);
+    overflow:hidden;
+    position:relative;
+    border-radius: 30px;
+}
+
+/* animated gradient blob */
+.hero::before{
+    content:"";
+    position:absolute;
+    width:700px;
+    height:700px;
+    border-radius:50%;
+    filter: blur(120px);
+    top:-80px;
+    right:-100px;
+}
+
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:0 20px;
+}
+
+.hero-content{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:40px;
+}
+
+/* TEXT */
+.hero-text{
+    flex:1;
+}
+
+.hero-text h1{
+    font-size:3.2rem;
+    margin-bottom:20px;
+    line-height:1.2;
+    color: #ffffff;
+}
+
+.hero-text span{
+    color: #4a0e0e ;
+}
+
+.hero-text p{
+    font-size:1.1rem;
+    color:rgb(3, 12, 58);
+    margin-bottom:30px;
+}
+
+/* BUTTONS */
+.buttons{
+    display:flex;
+    gap:15px;
+}
+
+.btn{
+    padding:14px 28px;
+    border-radius:8px;
+    font-weight:600;
+    text-decoration:none;
+    transition:.3s;
+}
+
+.btn-primary{
+    background:var(--primary);
+    color:white;
+}
+
+.btn-primary:hover{
+    background:var(--primary);
+    transform:translateY(-3px);
+}
+
+.btn-outline{
+    border:2px solid var(--primary);
+    color:var(--primary);
+}
+
+.btn-outline:hover{
+    background:var(--primary);
+    color:white;
+}
+
+/* IMAGE CARD */
+.hero-image{
+    width: 60%;
+    flex:1;
+    display:flex;
+    justify-content:center;
+}
+
+.card{
+    width:100%;
+    max-width:800px;
+    height:400px;
+    border-radius:16px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    font-size:9rem;
+    box-shadow:0 20px 40px rgba(0,0,0,0.15);
+    animation: float 6s ease-in-out infinite;
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+    .hero-content{
+        flex-direction:column;
+        text-align:center;
+    }
+
+    .buttons{
+        justify-content:center;
+    }
+
+    .nav-links{
+        display:none;
+    }
+}
+
+
+
+
+/* FEATURES SECTION */
+.features{
+    padding: 80px 0;
+    background: #ffffff;
+}
+
+/* HEADER */
+.section-header{
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-header h2{
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.section-header p{
+    color: var(--gray);
+    font-size: 1.1rem;
+}
+
+/* GRID */
+.features-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+/* CARD */
+.feature-card{
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 16px;
+    text-align: center;
+    transition: 0.3s;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* ICON */
+.feature-card i{
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 15px;
+}
+
+/* TEXT */
+.feature-card h3{
+    margin-bottom: 10px;
+}
+
+.feature-card p{
+    color: var(--gray);
+    font-size: 0.95rem;
+}
+
+/* HOVER EFFECT */
+.feature-card:hover{
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+    .features-grid{
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media(max-width:600px){
+    .features-grid{
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
+
+/* ABOUT SECTION */
+.about{
+    padding: 100px 0;
+    background: white;
+}
+
+.about-content{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:50px;
+}
+
+/* IMAGE SIDE */
+.about-image{
+    width: 40%;
+    flex:1;
+    display:flex;
+    justify-content:center;
+}
+
+.about-card{
+    width:100%;
+    max-width:400px;
+    height:300px;
+    border-radius:20px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    font-size:5rem;
+    box-shadow:0 20px 40px rgba(0,0,0,0.15);
+    animation: float 6s ease-in-out infinite;
+}
+
+/* TEXT SIDE */
+.about-text{
+    flex:1;
+}
+
+.about-text h2{
+    font-size:2.5rem;
+    margin-bottom:20px;
+}
+
+.about-text p{
+    color:var(--gray);
+    margin-bottom:30px;
+    font-size:1.05rem;
+}
+
+/* STATS */
+.about-stats{
+    display:flex;
+    gap:30px;
+    margin-bottom:30px;
+}
+
+.stat{
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(10px);
+    padding:20px;
+    border-radius:12px;
+    text-align:center;
+    min-width:90px;
+    border:1px solid rgba(0,0,0,0.05);
+}
+
+.stat h3{
+    color:var(--primary);
+    font-size:1.5rem;
+}
+
+.stat p{
+    font-size:0.9rem;
+    color:var(--gray);
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+    .about-content{
+        flex-direction:column;
+        text-align:center;
+    }
+
+    .about-stats{
+        justify-content:center;
+    }
+}
+
+
+/* HOW it work */
+.learn-more{
+    padding: 80px 0;
+    background: #ffffff;
+}
+.section-header{
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.section-header h2{
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.section-header p{
+    color: var(--gray);
+}
+
+/* STEPS GRID */
+.steps{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    margin-top: 40px;
+    position: relative; /* ✅ FIXED (important) */
+}
+
+/* CONNECTING LINE (SAFE) */
+.steps::before{
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    width: 80%;
+    height: 3px;
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    transform: translateY(-50%);
+    z-index: 0;
+}
+
+/* STEP CARD */
+.step{
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 16px;
+    text-align: center;
+    transition: 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+    position: relative;
+    z-index: 1; /* ensures above line */
+}
+
+/* ICON */
+.step-icon{
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 15px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--accent));;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.5rem;
+}
+
+/* TEXT */
+.step h3{
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.step p{
+    color: var(--gray);
+    font-size: 0.95rem;
+}
+
+/* HOVER EFFECT */
+.step:hover{
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+}
+
+/* RESPONSIVE */
+@media(max-width: 900px){
+    .steps{
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .steps::before{
+        display: none; /* remove line on tablet */
+    }
+}
+
+@media(max-width: 600px){
+    .steps{
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
+.footer{
+    background: linear-gradient(180deg,#fefefe,#ff6b6b);
+    color:white;
+    text-align:center;
+    padding:20px 10%;
+
+}
+
+
+.footer p{
+    margin:6px 0;
+    color:#4a0e0e;
+}
+
+.footer-social{
+
+    margin-top:15px;
+
+}
+
+.footer-social a{
+
+    margin:0 10px;
+
+    color:#4a0e0e;
+
+    text-decoration:none;
+
+    transition:0.3s;
+
+}
+
+.footer-social a i{
+        width:40px;
+        height:40px;
+        background:#0b59f6;
+        color:rgb(249, 249, 249);
+        align-items:center;
+        border-radius:50%;
+        text-decoration:none;
+        font-size:16px;
+    }
+.footer-social a i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 8px; /* Add space between icon and text */
+    }
+
+.footer-social a:hover{
+    color:white;
+    }
+
+.copyright, .copyright b {
+        margin-top: 20px;
+        font-size: 13px;
+        color: rgb(52, 52, 232) !important; /* Adding !important ensures it overrides other styles */
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav>
+    <div class="nav-container">
+        <div class="logo">Sudipta</div>
+        <div class="nav-links">
+            <b><a href="#home">Home</a></b>
+            <b><a href="#feature">Features</a></b>
+            <b><a href="#abouts">About</a></b>
+            <b><a href="#Contact">Contact</a></b>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+    <div class="container">
+        <div class="hero-content">
+
+            <!-- TEXT -->
+            <div class="hero-text">
+                <h1>Research Paper Summarizer <span>with AI Technology</span></h1>
+                <p>
+                    Transform complex manuscripts into actionable insights in seconds. Engineered for clarity, document integrity, and high-speed information retrieval for researchers who value their time.
+                </p>
+
+                <div class="buttons">
+                    <a href="{{ url_for('summery') }}" class="btn btn-primary">Lets Go</a>
+                    <a href="#learn_more" class="btn btn-outline">Learn More</a>
+                </div>
+            </div>
+
+            <!-- IMAGE -->
+            <div class="hero-image">
+                <div class="card">
+                    <i class="fa-brands fa-audible"></i>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+
+
+<section class="features" id="feature">
+    <div class="container">
+        
+        <div class="section-header">
+            <h2>Powerful Features</h2>
+            <p>Everything you need to quickly understand research papers</p>
+        </div>
+
+        <div class="features-grid">
+
+            <div class="feature-card">
+                <i class="fas fa-file-upload"></i>
+                <h3>PDF Upload</h3>
+                <p>Upload research papers in PDF format for instant processing.</p>
+            </div>
+
+            <div class="feature-card">
+                <i class="fas fa-align-left"></i>
+                <h3>Text Summarization</h3>
+                <p>Paste any research content and get concise summaries instantly.</p>
+            </div>
+
+            <div class="feature-card">
+                <i class="fas fa-brain"></i>
+                <h3>AI Powered</h3>
+                <p>Advanced NLP models generate accurate and meaningful summaries.</p>
+            </div>
+
+            <div class="feature-card">
+                <i class="fas fa-clock"></i>
+                <h3>Fast Processing</h3>
+                <p>Get summaries within seconds without reading long papers.</p>
+            </div>
+
+            <div class="feature-card">
+                <i class="fas fa-lightbulb"></i>
+                <h3>Key Insights</h3>
+                <p>Highlights important ideas and core concepts from papers.</p>
+            </div>
+
+            <div class="feature-card">
+                <i class="fas fa-laptop-code"></i>
+                <h3>User Friendly</h3>
+                <p>Clean and simple interface for smooth user experience.</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+
+<section class="about" id="abouts">
+    <div class="container">
+        
+        <div class="about-content">
+
+            <!-- LEFT IMAGE / VISUAL -->
+            <div class="about-image">
+                <div class="about-card">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+            </div>
+
+            <!-- RIGHT TEXT -->
+            <div class="about-text">
+                <h2>About Our AI Summarizer</h2>
+                <p>
+                    Our AI-powered research paper summarizer uses advanced natural language 
+                    processing to convert lengthy academic papers into short, clear summaries. 
+                    It helps students, researchers, and professionals quickly grasp key ideas 
+                    without reading entire documents, saving time and boosting productivity.
+                </p>
+
+                <div class="about-stats">
+
+                    <div class="stat">
+                        <h3>90%+</h3>
+                        <p>Summary Accuracy</p>
+                    </div>
+
+                    <div class="stat">
+                        <h3>Few Sec</h3>
+                        <p>Processing Time</p>
+                    </div>
+
+                    <div class="stat">
+                        <h3>24/7</h3>
+                        <p>Availability</p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<section class="learn-more" id="learn_more">
+    <div class="container">
+
+        <div class="section-header">
+            <h2>How It Works</h2>
+            <p>Simple, fast and intelligent research paper summarization</p>
+        </div>
+  
+        <div class="steps">
+
+            <div class="step">
+                <div class="step-icon">
+                    <i class="fas fa-file-upload"></i>
+                </div>
+                <h3>1. Upload Paper</h3>
+                <p>Upload your research paper in PDF format or paste the text.</p>
+            </div>
+
+            <div class="step">
+                <div class="step-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h3>2. Text Processing</h3>
+                <p>The system extracts and prepares the content for analysis.</p>
+            </div>
+
+            <div class="step">
+                <div class="step-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3>3. AI Summarization</h3>
+                <p>Advanced NLP models generate concise and meaningful summaries.</p>
+            </div>
+
+            <div class="step">
+                <div class="step-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h3>4. Get Summary</h3>
+                <p>View and use the summarized content instantly.</p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+
+<footer class="footer" id = "Contact" >
+
+    
+    <p><b>Email: sudiptajana11111@email.com</b></p>
+    
+    <p><b>Mobile: +91 8436685689</b></p>
+    
+    <p><b>Location: Kolkata, India</b></p>
+    
+    <div class="footer-social">
+    
+    <a href="#"><b><i class="fab fa-github"></i> GitHub</b></a>
+    <a href="#"><b><i class="fab fa-linkedin-in"></i> LinkedIn</b></a>
+    <a href="#"><b><i class="fab fa-facebook"></i> Facebook</b></a>
+    
+    </div>
+    
+    <p class="copyright"><b>
+    © 2026 Sudipta Jana | All Rights Reserved</b>
+    </p>
+    
+</footer>
+
+</body>
+</html>
